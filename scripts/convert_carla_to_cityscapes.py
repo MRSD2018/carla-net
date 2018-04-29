@@ -8,6 +8,7 @@ import multiprocessing
 import pdb
 
 data_dir = sys.argv[1]
+global output_dir
 output_dir = sys.argv[2]
 rgb_files = [f for f in os.listdir(data_dir) if re.match(r'carla_rgb', f)]
 
@@ -36,6 +37,31 @@ colors = np.asarray([[  0,   0,   0],
 def checkOrCreate(directory):
   if not os.path.exists(directory):
     os.makedirs(directory)
+
+
+checkOrCreate(output_dir)
+checkOrCreate(output_dir + '/carlascapes')
+checkOrCreate(output_dir + '/carlascapes/gtFine_trainvaltest')
+checkOrCreate(output_dir + '/carlascapes/gtFine_trainvaltest/gtFine')
+checkOrCreate(output_dir + '/carlascapes/gtFine_trainvaltest/gtFine/test')
+checkOrCreate(output_dir + '/carlascapes/gtFine_trainvaltest/gtFine/train')
+checkOrCreate(output_dir + '/carlascapes/gtFine_trainvaltest/gtFine/val')
+
+checkOrCreate(output_dir + '/carlascapes/gtFine_trainvaltest/gtFine/train/carla')
+
+checkOrCreate(output_dir + '/carlascapes/leftImg8bit')
+checkOrCreate(output_dir + '/carlascapes/leftImg8bit/test')
+checkOrCreate(output_dir + '/carlascapes/leftImg8bit/train')
+checkOrCreate(output_dir + '/carlascapes/leftImg8bit/train/carla')
+checkOrCreate(output_dir + '/carlascapes/leftImg8bit/val')
+
+global rgb_file_dir
+rgb_file_dir = output_dir + '/carlascapes/leftImg8bit/train/carla' 
+global gt_file_dir
+gt_file_dir = output_dir + '/carlascapes/gtFine_trainvaltest/gtFine/train/carla'
+
+
+
 
 def mapLabels(label):
   labelVal = 0 
@@ -82,7 +108,7 @@ def mapVisualLabels(label):
     labelVal = colors[20,0:] 
   return labelVal
 
-def processFile(file_name, rgb_file_dir, gt_file_dir):  
+def processFile(file_name):  
   im = Image.open(data_dir + '/' + file_name)
   num = file_name.split('_')[2].split('.')[0]
   print(num + "/" + str(len(rgb_files)))
@@ -112,31 +138,9 @@ def processFile(file_name, rgb_file_dir, gt_file_dir):
     seg_visual_image = Image.fromarray(seg_arr_human.astype(np.uint8), mode='RGB')
     seg_visual_image.save(seg_visual_file_save, "PNG")    
 
-
-
-
-checkOrCreate(output_dir)
-checkOrCreate(output_dir + '/carlascapes')
-checkOrCreate(output_dir + '/carlascapes/gtFine_trainvaltest')
-checkOrCreate(output_dir + '/carlascapes/gtFine_trainvaltest/gtFine')
-checkOrCreate(output_dir + '/carlascapes/gtFine_trainvaltest/gtFine/test')
-checkOrCreate(output_dir + '/carlascapes/gtFine_trainvaltest/gtFine/train')
-checkOrCreate(output_dir + '/carlascapes/gtFine_trainvaltest/gtFine/val')
-
-checkOrCreate(output_dir + '/carlascapes/gtFine_trainvaltest/gtFine/train/carla')
-
-checkOrCreate(output_dir + '/carlascapes/leftImg8bit')
-checkOrCreate(output_dir + '/carlascapes/leftImg8bit/test')
-checkOrCreate(output_dir + '/carlascapes/leftImg8bit/train')
-checkOrCreate(output_dir + '/carlascapes/leftImg8bit/train/carla')
-checkOrCreate(output_dir + '/carlascapes/leftImg8bit/val')
-
-rgb_file_dir = output_dir + '/carlascapes/leftImg8bit/train/carla' 
-gt_file_dir = output_dir + '/carlascapes/gtFine_trainvaltest/gtFine/train/carla'
-
 pool = multiprocessing.Pool(32)
 
-pool.map(processFile, file_name, rgb_file_dir, gt_file_dir)
+pool.map(processFile, rgb_files)
 #parse through the files
 #for file_name in rgb_files:
 #  processFile(file_name, rgb_file_dir, gt_file_dir)
