@@ -4,7 +4,7 @@ import re
 import sys
 import os.path
 import numpy as np
-
+import multiprocessing
 import pdb
 
 data_dir = sys.argv[1]
@@ -134,6 +134,9 @@ checkOrCreate(output_dir + '/carlascapes/leftImg8bit/val')
 rgb_file_dir = output_dir + '/carlascapes/leftImg8bit/train/carla' 
 gt_file_dir = output_dir + '/carlascapes/gtFine_trainvaltest/gtFine/train/carla'
 
+pool = multiprocessing.Pool(32)
+
+pool.map(processFile, file_name, rgb_file_dir, gt_file_dir)
 #parse through the files
-for file_name in rgb_files:
-  processFile(file_name, rgb_file_dir, gt_file_dir)
+#for file_name in rgb_files:
+#  processFile(file_name, rgb_file_dir, gt_file_dir)
