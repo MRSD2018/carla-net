@@ -60,70 +60,85 @@ rgb_file_dir = output_dir + '/carlascapes/leftImg8bit/train/carla'
 global gt_file_dir
 gt_file_dir = output_dir + '/carlascapes/gtFine_trainvaltest/gtFine/train/carla'
 
-
-
+label_mapping = {
+  0: 0,
+  1: 0,
+  3: 0,
+  4: 0,
+  10: 0,
+  13: 0,
+  14: 0,
+  15: 0,
+  16: 0,
+  17: 0,
+  18: 0,
+  19: 0,
+  20: 0, 
+  7: 7,
+  8: 8,
+  1: 11,
+  11: 12,
+  2: 13,
+  5: 17,
+  12: 20,
+  9: 21,
+  6: 34
+}    
 
 def mapLabels(label):
-  labelVal = 0 
-  if label == 7:
-    labelVal = 7 
-  if label == 8:
-    labelVal = 8 
-  if label == 1:
-    labelVal = 11
-  if label == 11:
-    labelVal = 12 
-  if label == 2:
-    labelVal = 13 
-  if label == 5:
-    labelVal = 17 
-  if label == 12:
-    labelVal = 20 
-  if label == 9:
-    labelVal = 21 
-  if label == 6:
-    labelVal = 34 
-  return labelVal
+  return label_mapping[label]
 
+visual_label_mapping = {
+  0: colors[3,0:],
+  3: colors[3,0:],
+  4: colors[3,0:],
+  10: colors[3,0:],
+  13: colors[3,0:],
+  14: colors[3,0:],
+  15: colors[3,0:],
+  16: colors[3,0:],
+  17: colors[3,0:],
+  18: colors[3,0:],
+  19: colors[3,0:],
+  20: colors[3,0:],
+  7: colors[1,0:],
+  8: colors[2,0:],
+  1: colors[3,0:],
+  11: colors[4,0:],
+  2: colors[5,0:],
+  5: colors[6,0:],
+  12: colors[8,0:],
+  9: colors[9,0:],
+  6: colors[20,0:] 
+}
 
+ 
 def mapVisualLabels(label):
-  labelVal = colors[3,0:]
-  if label == 7:
-    labelVal = colors[1,0:] 
-  if label == 8:
-    labelVal = colors[2,0:] 
-  if label == 1:
-    labelVal = colors[3,0:] 
-  if label == 11:
-    labelVal = colors[4,0:] 
-  if label == 2:
-    labelVal = colors[5,0:] 
-  if label == 5:
-    labelVal = colors[6,0:] 
-  if label == 12:
-    labelVal = colors[8,0:] 
-  if label == 9:
-    labelVal = colors[9,0:] 
-  if label == 6:
-    labelVal = colors[20,0:] 
-  return labelVal
+  return visual_label_mapping[label];
 
 def processFile(file_name):  
+
+
   im = Image.open(data_dir + '/' + file_name)
   num = file_name.split('_')[2].split('.')[0]
+
   print(num + "/" + str(len(rgb_files)))
   num_pad = str(num).zfill(6) 
+
+  file_root_name = "carla_" + num_pad + "_000020"
+
+  im_file_save = rgb_file_dir + "/" + file_root_name + "_leftImg8bit.png"
+  seg_file_save = gt_file_dir + "/" + file_root_name + "_gtFine_labelIds.png"
+  seg_visual_file_save = gt_file_dir + "/" + file_root_name + "_gtFine_color.png"
+
+
   seg_name = data_dir + '/carla_seg_' + num + '.png'
-  if os.path.isfile(seg_name):
+  if (os.path.isfile(seg_name) and not(os.path.isfile(im_file_save)) and not (os.path.isfile(seg_file_save)) and not (os.path.isfile(seg_visual_file_save))):
     #only save out to dataset if segmentation exists
     seg = Image.open(seg_name)
     seg_arr = np.array(seg)
-    file_root_name = "carla_" + num_pad + "_000020"
          
-    im_file_save = rgb_file_dir + "/" + file_root_name + "_leftImg8bit.png"
     im.save(im_file_save,"PNG")
-    seg_file_save = gt_file_dir + "/" + file_root_name + "_gtFine_labelIds.png"
-    seg_visual_file_save = gt_file_dir + "/" + file_root_name + "_gtFine_color.png"
     (sizey, sizex, chan) = seg_arr.shape
     seg_arr_labels = np.zeros(seg_arr.shape) 
     seg_arr_human = np.zeros(seg_arr.shape) 
@@ -138,7 +153,7 @@ def processFile(file_name):
     seg_visual_image = Image.fromarray(seg_arr_human.astype(np.uint8), mode='RGB')
     seg_visual_image.save(seg_visual_file_save, "PNG")    
 
-pool = multiprocessing.Pool(32)
+pool = multiprocessing.Pool(8)
 
 pool.map(processFile, rgb_files)
 #parse through the files
