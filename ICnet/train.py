@@ -6,6 +6,8 @@ import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.models as models
+import random
+
 
 from torch.autograd import Variable
 from torch.utils import data
@@ -93,6 +95,33 @@ def train(args):
         if os.path.isfile(args.resume):
             print("Loading model and optimizer from checkpoint '{}'".format(args.resume))
             checkpoint = torch.load(args.resume)
+            if (checkpoint['model_state']['module.cff_sub24.low_classifier_conv.bias'].shape[0] == 19):
+                checkpoint['model_state']['module.cff_sub24.low_classifier_conv.bias'].resize_(20)
+                checkpoint['model_state']['module.cff_sub24.low_classifier_conv.bias'][19] = random.uniform(-0.01, 0.01)
+            if (checkpoint['model_state']['module.cff_sub24.low_classifier_conv.weight'].shape[0] == 19):
+                checkpoint['model_state']['module.cff_sub24.low_classifier_conv.weight'].resize_(20,256,1,1)
+                for i in range(256):
+                    checkpoint['model_state']['module.cff_sub24.low_classifier_conv.weight'][19,i,0,0] = random.uniform(-0.01, 0.01)
+             
+            if (checkpoint['model_state']['module.cff_sub12.low_classifier_conv.bias'].shape[0] == 19):
+                checkpoint['model_state']['module.cff_sub12.low_classifier_conv.bias'].resize_(20)
+                checkpoint['model_state']['module.cff_sub12.low_classifier_conv.bias'][19] = random.uniform(-0.01, 0.01)
+            if (checkpoint['model_state']['module.cff_sub12.low_classifier_conv.weight'].shape[0] == 19):
+                checkpoint['model_state']['module.cff_sub12.low_classifier_conv.weight'].resize_(20,128,1,1)
+                for i in range(128):
+                    checkpoint['model_state']['module.cff_sub12.low_classifier_conv.weight'][19,i,0,0] = random.uniform(-0.01, 0.01)
+             
+            if (checkpoint['model_state']['module.classification.bias'].shape[0] == 19):
+                checkpoint['model_state']['module.classification.bias'].resize_(20)
+                checkpoint['model_state']['module.classification.bias'][19] = random.uniform(-0.01, 0.01)
+            if (checkpoint['model_state']['module.classification.weight'].shape[0] == 19):
+                checkpoint['model_state']['module.classification.weight'].resize_(20,128,1,1)
+                for i in range(128):
+                    checkpoint['model_state']['module.classification.weight'][19,i,0,0] = random.uniform(-0.01, 0.01)
+ 
+
+           # import pdb
+           # pdb.set_trace() 
             model.load_state_dict(checkpoint['model_state'])
             # optimizer.load_state_dict(checkpoint['optimizer_state'])
             # print("Loaded checkpoint '{}' (epoch {})"
@@ -112,7 +141,8 @@ def train(args):
 
             optimizer.zero_grad()
             outputs = model(images)
-
+            #import pdb
+            #pdb.set_trace()
             loss = loss_fn(input=outputs, target=labels)
 
             loss.backward()
@@ -175,7 +205,7 @@ if __name__ == '__main__':
 
     # Datasets
     parser.add_argument('--dataset', nargs='?', type=str, default='carlascapes',
-                        help='Dataset to use [\'carlascapes,pascal, camvid, ade20k etc\']')
+                        help='Dataset to use [\'carlascapes, cityscapes, pascal, camvid, ade20k etc\']')
 
     # ROW Size Image
     parser.add_argument('--img_rows', nargs='?', type=int, default=1025,

@@ -39,11 +39,12 @@ class cityscapesLoader(data.Dataset):
               [  0,  60, 100],
               [  0,  80, 100],
               [  0,   0, 230],
-              [119,  11,  32]]
+              [119,  11,  32],
+              [119,  130,  130]]
 
-    label_colours = dict(zip(range(19), colors))
+    label_colours = dict(zip(range(20), colors))
 
-    mean_rgb = {'pascal': [103.939, 116.779, 123.68], 'cityscapes': [73.15835921, 82.90891754, 72.39239876]} # pascal mean for PSPNet and ICNet pre-trained model
+    mean_rgb = {'pascal': [103.939, 116.779, 123.68], 'carlascapes': [73.15835921, 82.90891754, 72.39239876], 'cityscapes': [73.15835921, 82.90891754, 72.39239876]} # pascal mean for PSPNet and ICNet pre-trained model
 
     def __init__(self, root, split="train", is_transform=False, 
                  img_size=(512, 1024), augmentations=None, img_norm=True, version='pascal'):
@@ -60,7 +61,7 @@ class cityscapesLoader(data.Dataset):
         self.is_transform = is_transform
         self.augmentations = augmentations
         self.img_norm = img_norm
-        self.n_classes = 19
+        self.n_classes = 20
         self.img_size = img_size if isinstance(img_size, tuple) else (img_size, img_size)
         self.mean = np.array(self.mean_rgb[version])
         self.files = {}
@@ -73,15 +74,14 @@ class cityscapesLoader(data.Dataset):
         ## Revert Back to Original if there is some problem
     
         self.void_classes = [0, 1, 2, 3, 4, 5, 9, 10, 14, 15, 16, 18, 29, 30, -1]
-        self.valid_classes = [7, 8, 11, 12, 13, 17, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 31, 32, 34]
+        self.valid_classes = [7, 8, 11, 12, 13, 17, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 31, 32, 33, 34]
         self.class_names = ['unlabelled', 'road', 'sidewalk', 'building', 'wall', 'fence',\
                             'pole', 'traffic_light', 'traffic_sign', 'vegetation', 'terrain',\
                             'sky', 'person', 'rider', 'car', 'truck', 'bus', 'train', \
-                            'motorcycle','RoadLines']
+                            'motorcycle', 'bicycle', 'roadLines']
 
         self.ignore_index = 250
-        self.class_map = dict(zip(self.valid_classes, range(19)))
-
+        self.class_map = dict(zip(self.valid_classes, range(20)))
 
         if not self.files[split]:
             raise Exception("No files for split=[%s] found in %s" % (split, self.images_base))
@@ -97,7 +97,9 @@ class cityscapesLoader(data.Dataset):
 
         :param index:
         """
+     
         img_path = self.files[self.split][index].rstrip()
+        
         lbl_path = os.path.join(self.annotations_base,
                                 img_path.split(os.sep)[-2], 
                                 os.path.basename(img_path)[:-15] + 'gtFine_labelIds.png')
@@ -137,12 +139,14 @@ class cityscapesLoader(data.Dataset):
         lbl = lbl.astype(float)
         lbl = m.imresize(lbl, (self.img_size[0], self.img_size[1]), 'nearest')
         lbl = lbl.astype(int)
-
+        lbl[lbl == 255] = self.ignore_index
         if not np.all(classes == np.unique(lbl)):
             print("WARN: resizing labels yielded fewer classes")
 
         if not np.all(np.unique(lbl[lbl!=self.ignore_index]) < self.n_classes):
+         
             print('after det', classes,  np.unique(lbl))
+            
             raise ValueError("Segmentation map contained invalid class values")
 
         img = torch.from_numpy(img).float()
@@ -181,7 +185,7 @@ if __name__ == '__main__':
                              RandomRotate(10),
                              RandomHorizontallyFlip()])
 
-    local_path = '/home/meetshah1995/datasets/cityscapes/'
+    local_path = '/home/vivek16/16824_data/formatted/carlascapes/'
     dst = cityscapesLoader(local_path, is_transform=True, augmentations=augmentations)
     bs = 4
     trainloader = data.DataLoader(dst, batch_size=bs, num_workers=0)
