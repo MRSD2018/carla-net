@@ -25,7 +25,7 @@ from visdom import Visdom
 def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
     torch.save(state, filename)
     if is_best:
-        shutil.copyfile(filename, 'home/vivek16/ICnet/ptsemseg/models/checkpoints/model_best.pth.tar')
+        shutil.copyfile(filename, '/home/vivek16/carla-net/ICnet/ptsemseg/models/checkpoints/model_best.pth.tar')
 
 def visdom_visual(global_step,loss,win,viz):
     s=np.zeros(1)
@@ -122,7 +122,6 @@ def train(args):
 
            # import pdb
            # pdb.set_trace() 
-            print(model)
             model.load_state_dict(checkpoint['model_state'])
             # optimizer.load_state_dict(checkpoint['optimizer_state'])
             # print("Loaded checkpoint '{}' (epoch {})"
@@ -218,7 +217,7 @@ if __name__ == '__main__':
 
     # No of Epochs
 
-    parser.add_argument('--n_epoch', nargs='?', type=int, default=5,
+    parser.add_argument('--n_epoch', nargs='?', type=int, default=10,
                         help='# of the epochs')
     # Batch Size
     parser.add_argument('--batch_size', nargs='?', type=int, default=1,
