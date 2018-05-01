@@ -101,11 +101,19 @@ def test(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Params')
+
+
+
+    # Architecture
+    parser.add_argument('--arch', nargs='?', type=str, default='icnet',
+                        help='Architecture to use [\'fcn8s, unet, segnet etc\']')
+
+    # Datasets
+    parser.add_argument('--dataset', nargs='?', type=str, default='carlascapes',
+                        help='Dataset to use [\'carlascapes, cityscapes, pascal, camvid, ade20k etc\']')
+
     parser.add_argument('--model_path', nargs='?', type=str, default='fcn8s_pascal_1_26.pkl', 
                         help='Path to the saved model')
-    parser.add_argument('--dataset', nargs='?', type=str, default='pascal', 
-                        help='Dataset to use [\'pascal, camvid, ade20k etc\']')
-
     parser.add_argument('--img_norm', dest='img_norm', action='store_true', 
                         help='Enable input image scales normalization [0, 1] | True by default')
     parser.add_argument('--no-img_norm', dest='img_norm', action='store_false', 

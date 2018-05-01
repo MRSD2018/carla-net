@@ -10,9 +10,9 @@ from ptsemseg.models.utils import *
 from ptsemseg.loss import *
 
 icnet_specs = {
-    'cityscapes': 
+    'carlascapes': 
     {
-         'n_classes': 19,
+         'n_classes': 20,
          'input_size': (1025, 2049),
          'block_config': [3, 4, 6, 3],
     },
@@ -32,7 +32,7 @@ class icnet(nn.Module):
     """
 
     def __init__(self, 
-                 n_classes=19, 
+                 n_classes=20, 
                  block_config=[3, 4, 6, 3], 
                  input_size=(1025, 2049), 
                  version=None,

@@ -40,7 +40,7 @@ class cityscapesLoader(data.Dataset):
               [  0,  80, 100],
               [  0,   0, 230],
               [119,  11,  32],
-              [119,  130,  130]]
+              [119,  0,  0]]
 
     label_colours = dict(zip(range(20), colors))
 

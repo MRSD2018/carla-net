@@ -122,6 +122,7 @@ def train(args):
 
            # import pdb
            # pdb.set_trace() 
+            print(model)
             model.load_state_dict(checkpoint['model_state'])
             # optimizer.load_state_dict(checkpoint['optimizer_state'])
             # print("Loaded checkpoint '{}' (epoch {})"
