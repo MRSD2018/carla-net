@@ -6,6 +6,8 @@ import os.path
 import numpy as np
 import multiprocessing
 import pdb
+from decimal import Decimal
+
 
 data_dir = sys.argv[1]
 global output_dir
@@ -32,7 +34,7 @@ colors = np.asarray([[  0,   0,   0],
          [  0,  80, 100],
          [  0,   0, 230],
          [119,  11,  32],
-         [119,  130,  130]])
+         [119,  0,  0]])
 
 def checkOrCreate(directory):
   if not os.path.exists(directory):
@@ -47,18 +49,30 @@ checkOrCreate(output_dir + '/carlascapes/gtFine_trainvaltest/gtFine/test')
 checkOrCreate(output_dir + '/carlascapes/gtFine_trainvaltest/gtFine/train')
 checkOrCreate(output_dir + '/carlascapes/gtFine_trainvaltest/gtFine/val')
 
+checkOrCreate(output_dir + '/carlascapes/gtFine_trainvaltest/gtFine/test/carla')
 checkOrCreate(output_dir + '/carlascapes/gtFine_trainvaltest/gtFine/train/carla')
+checkOrCreate(output_dir + '/carlascapes/gtFine_trainvaltest/gtFine/val/carla')
 
 checkOrCreate(output_dir + '/carlascapes/leftImg8bit')
 checkOrCreate(output_dir + '/carlascapes/leftImg8bit/test')
 checkOrCreate(output_dir + '/carlascapes/leftImg8bit/train')
-checkOrCreate(output_dir + '/carlascapes/leftImg8bit/train/carla')
 checkOrCreate(output_dir + '/carlascapes/leftImg8bit/val')
+checkOrCreate(output_dir + '/carlascapes/leftImg8bit/test/carla')
+checkOrCreate(output_dir + '/carlascapes/leftImg8bit/train/carla')
+checkOrCreate(output_dir + '/carlascapes/leftImg8bit/val/carla')
 
-global rgb_file_dir
-rgb_file_dir = output_dir + '/carlascapes/leftImg8bit/train/carla' 
-global gt_file_dir
-gt_file_dir = output_dir + '/carlascapes/gtFine_trainvaltest/gtFine/train/carla'
+global rgb_file_dir_train
+global rgb_file_dir_test
+global rgb_file_dir_val
+rgb_file_dir_train = output_dir + '/carlascapes/leftImg8bit/train/carla' 
+rgb_file_dir_test = output_dir + '/carlascapes/leftImg8bit/test/carla' 
+rgb_file_dir_val = output_dir + '/carlascapes/leftImg8bit/val/carla' 
+global gt_file_dir_train
+global gt_file_dir_test
+global gt_file_dir_val
+gt_file_dir_train = output_dir + '/carlascapes/gtFine_trainvaltest/gtFine/train/carla'
+gt_file_dir_test = output_dir + '/carlascapes/gtFine_trainvaltest/gtFine/test/carla'
+gt_file_dir_val = output_dir + '/carlascapes/gtFine_trainvaltest/gtFine/val/carla'
 
 label_mapping = {
   0: 0,
@@ -121,6 +135,16 @@ def processFile(file_name):
 
   im = Image.open(data_dir + '/' + file_name)
   num = file_name.split('_')[2].split('.')[0]
+  num_dec = Decimal(num)
+  if (num_dec%10 == 0):
+    gt_file_dir = gt_file_dir_test
+    rgb_file_dir = rgb_file_dir_test
+  elif (num_dec%10 == 1):
+    gt_file_dir = gt_file_dir_val
+    rgb_file_dir = rgb_file_dir_val
+  else:
+    gt_file_dir = gt_file_dir_train
+    rgb_file_dir = rgb_file_dir_train
 
   print(num + "/" + str(len(rgb_files)))
   num_pad = str(num).zfill(6) 
@@ -138,24 +162,25 @@ def processFile(file_name):
     seg = Image.open(seg_name)
     seg_arr = np.array(seg)
          
-    im.save(im_file_save,"PNG")
     (sizey, sizex, chan) = seg_arr.shape
-    seg_arr_labels = np.zeros(seg_arr.shape) 
+    seg_arr_labels = np.zeros((sizey, sizex)) 
     seg_arr_human = np.zeros(seg_arr.shape) 
     for j in range(sizey):
       for i in range(sizex): 
         seg_arr_human[j,i,0:] = mapVisualLabels(seg_arr[j,i,0])
-        for c in range(chan):
-          seg_arr_labels[j,i,c] = mapLabels(seg_arr[j,i,c])
-    seg_image = Image.fromarray(seg_arr_labels.astype(np.uint8), mode='RGB')
+        seg_arr_labels[j,i] = mapLabels(seg_arr[j,i,0])
+    seg_image = Image.fromarray(seg_arr_labels.astype(np.uint8), mode='L')
     seg_image.save(seg_file_save, "PNG")    
 
     seg_visual_image = Image.fromarray(seg_arr_human.astype(np.uint8), mode='RGB')
     seg_visual_image.save(seg_visual_file_save, "PNG")    
+
+    im.save(im_file_save,"PNG")
+
 
 pool = multiprocessing.Pool(8)
 
 pool.map(processFile, rgb_files)
 #parse through the files
 #for file_name in rgb_files:
-#  processFile(file_name, rgb_file_dir, gt_file_dir)
+#  processFile(file_name)
