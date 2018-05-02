@@ -217,7 +217,7 @@ if __name__ == '__main__':
 
     # No of Epochs
 
-    parser.add_argument('--n_epoch', nargs='?', type=int, default=10,
+    parser.add_argument('--n_epoch', nargs='?', type=int, default=5,
                         help='# of the epochs')
     # Batch Size
     parser.add_argument('--batch_size', nargs='?', type=int, default=1,
@@ -229,7 +229,7 @@ if __name__ == '__main__':
                         help='Learning Rate')
 
     # Resume
-    parser.add_argument('--resume', nargs='?', type=str, default='icnet_cityscapes_trainval_90k.pth',
+    parser.add_argument('--resume', nargs='?', type=str, default='checkpoint.pth.tar',
                         help='Path to previous saved model to restart from')
 
     # Visdom Visualization
