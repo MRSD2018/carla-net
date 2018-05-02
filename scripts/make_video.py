@@ -10,32 +10,44 @@ from decimal import Decimal
 from scipy.misc import imresize 
 
 data_dir = sys.argv[1]
-global output_dir
-output_dir = sys.argv[2]
-rgb_files = [f for f in os.listdir(data_dir) if re.match(r'carla_rgb', f)]
+label_dir = sys.argv[2]
+output_dir = sys.argv[3]
 
 def checkOrCreate(directory):
   if not os.path.exists(directory):
     os.makedirs(directory)
 
-
 checkOrCreate(output_dir)
 
-def processFile(file_name):  
-  im = Image.open(data_dir + '/' + file_name)
-
-  im_file_save = output_dir + '/' + file_name
-  if not(os.path.isfile(im_file_save)):
-    print("Resizing " + file_name)
-    im_arr = np.array(im)
-    im_out = imresize(im_arr,(1025,2049,3), interp='bilinear')
-    im_converted = Image.fromarray(im_out.astype(np.uint8), mode='RGB')
-    im_converted.save(im_file_save)
-    print("Saved file " + im_file_save)
+rgb_files = [f for f in os.listdir(data_dir) if re.match(r'carla_rgb', f)]
   
+
+
+
+def processFile(file_name):  
+  print("Processing image " + file_name)
+  im = Image.open(data_dir + '/' + file_name)
+  label = Image.open(label_dir + '/' + file_name)
+  im_arr = np.array(im)
+  label_arr = np.array(label)
+  (sizey, sizex, chan) = im_arr.shape
+  for j in range(sizey):
+    for i in range(sizex):
+      #print(label_arr[j,i,:])
+      if label_arr[j,i,0] == 124 and label_arr[j,i,1] == 0 and label_arr[j,i,2] == 0: 
+        im_arr[j,i,:] = [0,0,255]
+  im_out = imresize(im_arr,(512,1024,3), interp='bilinear')
+  im_converted = Image.fromarray(im_out.astype(np.uint8), mode='RGB')
+  num = Decimal(file_name.split('_')[2].split('.')[0])
+  num_pad = str(num).zfill(6)
+  im_converted.save(output_dir + '/' + num_pad + '.png')
+  print('Saved file ' + num_pad + '.png')
+
+
 pool = multiprocessing.Pool(8)
 
 pool.map(processFile, rgb_files)
-#parse through the files
-for file_name in rgb_files:
-  processFile(file_name)
+#for file_name in rgb_files:
+#  processFile(file_name)
+
+
